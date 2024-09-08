@@ -9,6 +9,7 @@ document.body.appendChild(canvas);
 
 let backgroundImage, spaceshipImage, bulletImage, enemyImage, gameOverImage;
 let gameOver = false; // true 이면, 게임 끝
+let score = 0;
 
 //  우주선 좌표
 let spaceshipX = canvas.width / 2 - 33;
@@ -21,10 +22,25 @@ function Bullet() {
     this.init = function () {
         this.x = spaceshipX + 20;
         this.y = spaceshipY;
+        this.alive = true; // true 면 유효한 총알 false 는
         bulletList.push(this);
     };
     this.update = function () {
         this.y -= 7;
+    };
+
+    this.checkHit = function () {
+        for (let i = 0; i < enemyList.length; i++) {
+            if (
+                this.y <= enemyList[i].y &&
+                this.x >= enemyList[i].x &&
+                this.x >= enemyList[i].x + 24
+            ) {
+                score++;
+                this.alive = false;
+                enemyList.splice(i, 1);
+            }
+        }
     };
 }
 
@@ -105,9 +121,12 @@ function update() {
         }
     }
 
-    // 총알의 y 좌표 업데이트 하는 함수 호출
+    // 총알의 y 좌표 업데이트 , 총알과 만났는지 확인 하는 함수 호출
     for (let i = 0; i < bulletList.length; i++) {
-        bulletList[i].update();
+        if (bulletList[i].alive) {
+            bulletList[i].update();
+            bulletList[i].checkHit();
+        }
     }
     // 적군의 y 좌표 업데이트 하는 함수 호출
     for (let i = 0; i < enemyList.length; i++) {
@@ -119,9 +138,14 @@ function render() {
     // .drawImage(image, dx, dy, dWidth, dHeight);
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
     ctx.drawImage(spaceshipImage, spaceshipX, spaceshipY);
+    ctx.fillText(`Score : ${score}`, 20, 20);
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
 
     for (let i = 0; i < bulletList.length; i++) {
-        ctx.drawImage(bulletImage, bulletList[i].x, bulletList[i].y);
+        if (bulletList[i].alive) {
+            ctx.drawImage(bulletImage, bulletList[i].x, bulletList[i].y);
+        }
     }
     for (let i = 0; i < enemyList.length; i++) {
         ctx.drawImage(enemyImage, enemyList[i].x, enemyList[i].y);
